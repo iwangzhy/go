@@ -37,9 +37,11 @@ const (
 var ErrShortWrite = errors.New("short write")
 
 // errInvalidWrite means that a write returned an impossible count.
+// Write 方法返回的字节数不符合预期，如 小于 0 或大于 len(p)。
 var errInvalidWrite = errors.New("invalid write result")
 
 // ErrShortBuffer means that a read required a longer buffer than was provided.
+// 缓冲区的长度小于要读取的字节数
 var ErrShortBuffer = errors.New("short buffer")
 
 // EOF is the error returned by Read when no more input is available.
@@ -49,6 +51,9 @@ var ErrShortBuffer = errors.New("short buffer")
 // If the EOF occurs unexpectedly in a structured data stream,
 // the appropriate error is either [ErrUnexpectedEOF] or some other error
 // giving more detail.
+// EOF 是 Read 方法在没有更多输入可用时返回的错误。 如果是正确的读完文件时，应该返回这个 EOF
+// 因为开发者会直接比较 err == EOF 来判断文件是否读完。
+// 如果是预期之外的 EOF，应该返回 ErrUnexpectedEOF，或者更具体的错误信息。
 var EOF = errors.New("EOF")
 
 // ErrUnexpectedEOF means that EOF was encountered in the
@@ -59,6 +64,7 @@ var ErrUnexpectedEOF = errors.New("unexpected EOF")
 // ErrNoProgress is returned by some clients of a [Reader] when
 // many calls to Read have failed to return any data or error,
 // usually the sign of a broken [Reader] implementation.
+// 当 Reader 客户端多次调用 Read 方法都未能返回数据或错误时
 var ErrNoProgress = errors.New("multiple Read calls return no data or error")
 
 // Reader is the interface that wraps the basic Read method.
