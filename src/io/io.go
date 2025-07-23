@@ -19,13 +19,21 @@ import (
 
 // Seek whence values.
 const (
-	SeekStart   = 0 // seek relative to the origin of the file
+	// SeekStart 从数据流起始位置开始计算偏移量
+	SeekStart = 0 // seek relative to the origin of the file
+	// SeekCurrent 从数据流当前读写位置开始计算偏移量
 	SeekCurrent = 1 // seek relative to the current offset
-	SeekEnd     = 2 // seek relative to the end
+	// SeekEnd 从数据流的末尾开始计算偏移量
+	// 通常用于移动到文件结尾或查找文件大小
+	SeekEnd = 2 // seek relative to the end
 )
 
 // ErrShortWrite means that a write accepted fewer bytes than requested
 // but failed to return an explicit error.
+//
+// 表示写入操作接收的字节数小于请求数量，但未能返回明确的错误信息
+// 具体就是：Writer方法返回的 n 小于传递进去的 []byte 的长度
+// bufio.Flush() 方法
 var ErrShortWrite = errors.New("short write")
 
 // errInvalidWrite means that a write returned an impossible count.
@@ -45,6 +53,7 @@ var EOF = errors.New("EOF")
 
 // ErrUnexpectedEOF means that EOF was encountered in the
 // middle of reading a fixed-size block or data structure.
+// 在读取固定大小的块或数据结构时遇到了 EOF
 var ErrUnexpectedEOF = errors.New("unexpected EOF")
 
 // ErrNoProgress is returned by some clients of a [Reader] when
@@ -326,18 +335,24 @@ func WriteString(w Writer, s string) (n int, err error) {
 // If min is greater than the length of buf, ReadAtLeast returns [ErrShortBuffer].
 // On return, n >= min if and only if err == nil.
 // If r returns an error having read at least min bytes, the error is dropped.
+//
+// 从 r 读取数据到 buf 中，读取 min 个字节
+// 返回 读取的字节数和 error
 func ReadAtLeast(r Reader, buf []byte, min int) (n int, err error) {
-	if len(buf) < min {
+	if len(buf) < min { // 缓冲区不够 min 字节
 		return 0, ErrShortBuffer
 	}
 	for n < min && err == nil {
 		var nn int
+		// nn 表达此次读取到的字节数
 		nn, err = r.Read(buf[n:])
 		n += nn
 	}
 	if n >= min {
 		err = nil
 	} else if n > 0 && err == EOF {
+		// 即 n > 0 && n < min & err == EOF
+		// 表示，读取到了数据，但是没到 min 个字节就出现了  EOF
 		err = ErrUnexpectedEOF
 	}
 	return
@@ -532,6 +547,7 @@ func (s *SectionReader) Seek(offset int64, whence int) (int64, error) {
 	case SeekEnd:
 		offset += s.limit
 	}
+	// 试图定位到文件起始位置之前的偏移量是错误的操作。
 	if offset < s.base {
 		return 0, errOffset
 	}

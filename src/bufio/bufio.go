@@ -644,6 +644,7 @@ func (b *Writer) Flush() error {
 	}
 	n, err := b.wr.Write(b.buf[0:b.n])
 	if n < b.n && err == nil {
+		// Write 少写了数据，但是又没有给出具体的 error 信息
 		err = io.ErrShortWrite
 	}
 	if err != nil {
